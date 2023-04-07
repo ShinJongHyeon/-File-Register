@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="CodecheckDAO">
+
+    <!-- 글쓰기 -->
+    <insert id="createCodecheck">
+        INSERT INTO CODECHECK ( 
+            CODECHECK_BCODE,
+            CODECHECK_BNAME, 
+            CODECHECK_BSHOP, 
+            CODECHECK_BTEL,
+            CODECHECK_BPAX,
+            CODECHECK_BZIPCODE,
+            CODECHECK_BADDR,
+            CODECHECK_BSECTION,
+            CODECHECK_BSPOT
+        ) VALUES(
+            #{codecheck_bcode},
+            #{codecheck_bname}, 
+            #{codecheck_bshop},
+            #{codecheck_btel},
+            #{codecheck_bpax},
+            #{codecheck_bzipcode},
+            #{codecheck_baddr},
+            #{codecheck_bsection},
+            #{codecheck_bspot} 
+        )
+    </insert>
+
+    <!-- 글 수정 -->
+    <update id="updateCodecheck">
+        UPDATE CODECHECK
+        SET
+        CODECHECK_BCODE = #{codecheck_bcode},
+        CODECHECK_BNAME = #{codecheck_bname},
+        CODECHECK_BSHOP = #{codecheck_bshop},
+        CODECHECK_BTEL = #{codecheck_btel},
+        CODECHECK_BPAX = #{codecheck_bpax},
+        CODECHECK_BZIPCODE = #{codecheck_bzipcode},
+        CODECHECK_BADDR = #{codecheck_baddr},
+        CODECHECK_BSECTION = #{codecheck_bsection},
+        CODECHECK_BSPOT = #{codecheck_bspot}
+        WHERE
+        CODECHECK_BCODE = #{codecheck_bcode}
+    </update>
+
+
+    <!-- 목록 -->
+    <select id="listAllCodecheck" resultType="Codecheck">
+        SELECT * FROM (
+            SELECT ROWNUM AS RN, A.* FROM (
+                SELECT * FROM CODECHECK 
+                <include refid="search"></include>
+            ) A ORDER BY CODECHECK_BCODE DESC
+        ) WHERE RN BETWEEN #{start} AND #{end}
+    </select>
+
+    <!-- 게시글 갯수 -->
+    <select id="getCountCodecheck" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM CODECHECK <include refid="search"></include>
+    </select>
+		
+		<!-- 검색조건 -->
+    <sql id="search">
+        <choose>
+            <when test="searchOption == 'ALL'">
+                WHERE CODECHECK_BNAME LIKE '%'||#{keyword}||'%'
+                OR CODECHECK_BSHOP LIKE LOWER('%'||#{keyword}||'%')
+                OR CODECHECK_BSHOP LIKE UPPER('%'||#{keyword}||'%')
+                OR CODECHECK_BSECTION LIKE LOWER('%'||#{keyword}||'%')
+                OR CODECHECK_BSECTION LIKE UPPER('%'||#{keyword}||'%')
+            </when>
+            <otherwise>
+	            WHERE ${searchOption} LIKE LOWER('%'||#{keyword}||'%')
+	            OR ${searchOption} LIKE UPPER('%'||#{keyword}||'%')
+		    </otherwise>
+   			</choose>
+		</sql>
+</mapper>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="FileregisterDAO">
+
+	<!-- 글쓰기 -->
+	<insert id="uploadFile">
+		INSERT INTO FILEREGISTER ( 
+			FILEREGISTER_CURRENTDATE,
+			FILEREGISTER_BLOCKNUMBER, 
+			FILEREGISTER_HANDLENUMBER, 
+			FILEREGISTER_BILLTYPE,
+			FILEREGISTER_STATE,
+			FILEREGISTER_CHECKNUMBER,
+			FILEREGISTER_BANKCODE,
+			FILEREGISTER_SHOPCODE,
+			FILEREGISTER_MONEYTYPE,
+			FILEREGISTER_PRICE,
+			FILEREGISTER_IMAGEPATH,
+			FILEREGISTER_CREATEDATE,
+			FILEREGISTER_CREATETIME,
+			FILEREGISTER_CREATER
+		) VALUES(
+			#{fileregister_currentdate}, 
+			#{fileregister_blocknumber},
+			#{fileregister_handlenumber},
+			#{fileregister_billtype},
+			#{fileregister_state},
+			#{fileregister_checknumber},
+			#{fileregister_bankcode},
+			#{fileregister_shopcode},
+			#{fileregister_moneytype},
+			#{fileregister_price},
+			#{fileregister_imagepath},
+			#{fileregister_createdate},
+			#{fileregister_createtime},
+			#{fileregister_creater}
+			
+		)
+	</insert>
+
+	 <!-- 글 수정 -->
+    <update id="updateFileregister">
+        UPDATE FILEREGISTER
+        SET
+        FILEREGISTER_CURRENTDATE = #{fileregister_currentdate},
+        FILEREGISTER_BLOCKNUMBER = #{fileregister_blocknumber},
+        FILEREGISTER_HANDLENUMBER = #{fileregister_handlenumber},
+        FILEREGISTER_BILLTYPE = #{fileregister_billtype},
+        FILEREGISTER_STATE = #{fileregister_state},
+        FILEREGISTER_CHECKNUMBER = #{fileregister_checknumber},
+        FILEREGISTER_SHOPCODE = #{fileregister_shopcode},
+        FILEREGISTER_MONEYTYPE = #{fileregister_moneytype},
+        FILEREGISTER_PRICE = #{fileregister_price},
+        FILEREGISTER_IMAGEPATH = #{fileregister_imagepath},
+        FILEREGISTER_CREATEDATE = #{fileregister_createdate},
+        FILEREGISTER_CREATETIME = #{fileregister_createtime},
+        FILEREGISTER_CREATER = #{fileregister_creater}
+        WHERE
+        FILEREGISTER_BANKCODE = #{fileregister_bankcode}
+    </update>
+
+    <!-- 글 삭제 -->
+    <delete id="deleteFileregister">
+        UPDATE FILEREGISTER SET DELETED='Y' WHERE FILEREGISTER_BANKCODE = #{fileregister_bankcode}
+    </delete>
+
+    <!-- 게시글 보기 -->
+    <select id="readFileregister" resultType="Fileregister">
+        SELECT 
+        *
+        FROM FILEREGISTER
+        WHERE FILEREGISTER_BANKCODE = #{fileregister_bankcode}
+    </select>
+
+    
+	<select id="listAllFileregister" resultType="Fileregister">
+		  SELECT *
+		  FROM (
+		    SELECT ROWNUM AS RN, A.*
+		    FROM (
+		      SELECT *
+		      FROM FILEREGISTER
+		      WHERE FILEREGISTER_CURRENTDATE = #{selectedDate}
+		      <choose>
+		        <when test="searchOption == 'ALL'">
+		          <if test="selectedDate != null">
+		            AND
+		          </if>
+		          (FILEREGISTER_BILLTYPE LIKE '%'||#{keyword}||'%'
+		          OR FILEREGISTER_SHOPCODE LIKE LOWER('%'||#{keyword}||'%')
+		          OR FILEREGISTER_SHOPCODE LIKE UPPER('%'||#{keyword}||'%')
+		          OR FILEREGISTER_BLOCKNUMBER LIKE LOWER('%'||#{keyword}||'%')
+		          OR FILEREGISTER_BLOCKNUMBER LIKE UPPER('%'||#{keyword}||'%'))
+		        </when>
+		        <otherwise>
+		          <if test="selectedDate != null">
+		            AND
+		          </if>
+		          ${searchOption} LIKE LOWER('%'||#{keyword}||'%')
+		          OR ${searchOption} LIKE UPPER('%'||#{keyword}||'%')
+		        </otherwise>
+		      </choose>
+		      ORDER BY FILEREGISTER_BANKCODE DESC
+		    ) A
+		  )
+		  WHERE RN BETWEEN #{start} AND #{end}
+		</select>
+
+	<!--
+	<select id="getCountFileregister" resultType="java.lang.Integer">
+	    SELECT COUNT(*) FROM FILEREGISTER <include refid="search"></include>
+	</select> -->
+	
+	<select id="getCountFileregister" resultType="java.lang.Integer">
+	    SELECT COUNT(*)
+	    FROM FILEREGISTER
+	    <where>
+	        <choose>
+	            <when test="searchOption == 'ALL'">
+	                AND (FILEREGISTER_CURRENTDATE LIKE '%'||#{keyword}||'%'
+	                OR FILEREGISTER_SHOPCODE LIKE LOWER('%'||#{keyword}||'%')
+	                OR FILEREGISTER_SHOPCODE LIKE UPPER('%'||#{keyword}||'%')
+	                OR FILEREGISTER_BLOCKNUMBER LIKE LOWER('%'||#{keyword}||'%')
+	                OR FILEREGISTER_BLOCKNUMBER LIKE UPPER('%'||#{keyword}||'%'))
+	            </when>
+	            <otherwise>
+	                AND (${searchOption} LIKE LOWER('%'||#{keyword}||'%')
+	                OR ${searchOption} LIKE UPPER('%'||#{keyword}||'%'))
+	            </otherwise>
+	        </choose>
+	    </where>
+	</select>
+	
+
+		<!-- 검색조건 -->
+    <sql id="search">
+    <choose>
+        <when test="searchOption == 'ALL'">
+            WHERE (FILEREGISTER_CURRENTDATE LIKE '%'||#{keyword}||'%'
+            OR FILEREGISTER_SHOPCODE LIKE LOWER('%'||#{keyword}||'%')
+            OR FILEREGISTER_SHOPCODE LIKE UPPER('%'||#{keyword}||'%')
+            OR FILEREGISTER_BLOCKNUMBER LIKE LOWER('%'||#{keyword}||'%')
+            OR FILEREGISTER_BLOCKNUMBER LIKE UPPER('%'||#{keyword}||'%'))
+        </when>
+        <otherwise>
+            WHERE (${searchOption} LIKE LOWER('%'||#{keyword}||'%')
+            OR ${searchOption} LIKE UPPER('%'||#{keyword}||'%'))
+        </otherwise>
+    </choose>
+	</sql>
+</mapper>

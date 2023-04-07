@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="MemberDAO">
+
+    <resultMap id="member" type="member">
+    
+    	<id property="member_seq" column="MEMBER_SEQ"/>
+
+        <id property="member_id" column="MEMBER_ID"/>
+
+        <result property="member_name" column="MEMBER_NAME"/>
+
+        <result property="member_pwd" column="MEMBER_PWD"/>
+
+        <result property="member_email" column="MEMBER_EMAIL"/>
+
+    </resultMap>
+
+
+    <select id="checkID" resultType="java.lang.Integer">
+
+        SELECT COUNT(*)
+        FROM MEMBER
+
+        WHERE MEMBER_ID = #{member_id}
+
+    </select>
+
+
+    <select id="checkMember" resultType="java.lang.Integer">
+
+        SELECT COUNT(*)
+        FROM MEMBER
+
+        WHERE MEMBER_ID = #{member_id}
+          AND MEMBER_PWD = #{member_pwd}
+
+    </select>
+
+
+    <insert id="insertMember">
+
+		<![CDATA[
+        INSERT INTO MEMBER (MEMBER_SEQ,
+        					MEMBER_ID,
+        					MEMBER_NAME,
+                            MEMBER_PWD,
+                            MEMBER_EMAIL,
+                            MEMBER_PASS)
+        VALUES (ID_SEQ.NEXTVAL,
+        		#{member_id},
+                #{member_name},
+                #{member_pwd},
+                #{member_email},
+                #{member_pass})
+                
+        ]]>
+
+	</insert>
+
+
+    <update id="updateMember">
+
+        UPDATE MEMBER
+
+        SET MEMBER_PWD     = #{member_pwd},
+
+            MEMBER_EMAIL   = #{member_email},
+
+        WHERE MEMBER_ID = #{member_id}
+
+    </update>
+
+
+    <delete id="deleteMember">
+
+        DELETE
+        FROM MEMBER
+
+        WHERE MEMBER_ID = #{member_id}
+
+    </delete>
+
+
+    <select id="login" resultMap="member">
+
+		<![CDATA[
+        SELECT *
+        FROM MEMBER
+        WHERE MEMBER_ID = #{member_id}
+          AND MEMBER_PWD = #{member_pwd}
+        ]]>
+
+	</select>
+
+
+    <select id="getAll" resultMap="member">
+
+        SELECT *
+        FROM MEMBER
+
+    </select>
+
+
+    <sql id="myp">
+
+        AND PAYMENT_DATE BETWEEN ADD_MONTHS(SYSDATE, -3) AND SYSDATE
+
+    </sql>
+
+
+    <select id="findId" resultType="member">
+
+        select *
+        from MEMBER
+        where MEMBER_NAME = #{member_name}
+          and MEMBER_EMAIL = #{member_email}
+
+    </select>
+
+
+    <select id="findPassword" resultType="member">
+
+        SELECT *
+        FROM MEMBER
+        WHERE MEMBER_ID = #{member_id}
+          AND MEMBER_NAME = #{member_name}
+          and MEMBER_EMAIL = #{member_email}
+
+    </select>
+
+
+    <update id="updatePassword">
+
+        UPDATE MEMBER
+        SET MEMBER_PWD=#{member_pwd}
+        WHERE MEMBER_ID = #{member_id}
+
+    </update>
+    <!--@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@관리자용 회원정보수정@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@-->
+    <resultMap id="memberinfo" type="memberinfo">
+        <result property="member_id" column="MEMBER_ID"/>
+        <result property="member_name" column="MEMBER_NAME"/>
+        <result property="member_email" column="MEMBER_EMAIL"/>
+        <result property="member_seq" column="MEMBER_SEQ"/>
+        <result property="member_pass" column="MEMBER_PASS"/>
+    </resultMap>
+
+	<select id="listSearchMember" resultMap="memberinfo">
+		SELECT * FROM (
+			SELECT ROWNUM AS RN, A.* FROM (
+				SELECT * FROM MEMBER
+				WHERE UPPER(MEMBER_NAME) LIKE UPPER('%'||#{sMember}||'%') OR LOWER(MEMBER_NAME) LIKE LOWER('%'||#{sMember}||'%')
+			) A
+		) WHERE RN BETWEEN #{start} AND #{end}
+	</select>
+	
+	<select id="countSearchMember" resultType="java.lang.Integer">
+		SELECT COUNT(*) 
+		FROM MEMBER
+		WHERE UPPER(MEMBER_NAME) LIKE UPPER('%'||#{sMember}||'%') 
+		OR LOWER(MEMBER_NAME) LIKE LOWER('%'||#{sMember}||'%')
+	</select>
+	<!-- 관리자 리스트 시작 -->
+    <select id="getAdminCountMember" resultType="java.lang.Integer">
+		<![CDATA[
+        SELECT COUNT(*)
+        FROM MEMBER
+        ]]>
+	</select>
+	
+	<!-- 관리자 회원 목록 -->
+	<select id="getAdminMemberList" resultMap="memberinfo">
+		<![CDATA[
+			SELECT 
+			MEMBER_ID,
+			MEMBER_NAME,
+			MEMBER_EMAIL
+			FROM (SELECT ROWNUM AS RN, A.* FROM (SELECT * FROM MEMBER ORDER BY MEMBER_ID DESC)A) 
+			WHERE RN BETWEEN #{start} AND #{end}
+		]]>
+	</select>
+<!-- 관리자 리스트 끝 -->
+<!-- 관리자 업데이트 시작 -->
+    <update id="updateMember2">
+    <![CDATA[
+        UPDATE MEMBER
+        SET MEMBER_PASS = #{member_pass, jdbcType=VARCHAR}
+        WHERE MEMBER_ID = #{member_id}
+        ]]>
+    </update>
+    <!-- <update id="updateMember2">
+    	UPDATE MEMBER
+		SET MEMBER_PASS = 1
+		WHERE MEMBER_PASS = 2;
+    </update> -->
+    
+    <delete id="deleteMember2">
+        DELETE
+        FROM MEMBER
+        WHERE MEMBER_ID = #{member_id}
+    </delete>
+    
+    <select id="memberDetail" resultMap="member">
+		<![CDATA[
+        SELECT *
+        FROM MEMBER
+        WHERE MEMBER_ID = #{member_id}
+        ]]>
+	</select>
+<!-- 관리자 업데이트 끝 -->
+    <!--@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@-->
+</mapper>
